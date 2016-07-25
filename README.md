@@ -1,6 +1,6 @@
 # Chef::Nexus
 
-chef-nexus is a Chef resource for managing artifacts on Nexus by Sonatype.
+chef-nexus is a Ruby gem that provides the `nexus` Chef resource for managing artifacts on Nexus by Sonatype.
 
 ## Usage
 
@@ -11,7 +11,7 @@ There is an optional Nexus config file that you can create and it will be read i
 2. `File.read("#{ENV['HOME']}/.nexus/config")`
 3. `File.read('/etc/.nexus/config')`
 
-**Note:** only the first one found will be loaded
+**NOTE:** only the first one found will be loaded
 
 Example config file:
 ```json
@@ -77,7 +77,7 @@ Order of precedence:
   :classifier => String name of the files classifier
   :version => [String, Fixnum, Float] of the version
 ```
-**NOTES**:
+**NOTE:**
 
 * `:remote_url` will be parsed for pom information if it is syntactically correct according to Maven & Nexus standards, as in:
 `<NEXUS_URL>/repositories/<NEXUS_REPO>/<groupId>/<artifactId>/<version>/<artifactId>-<version>-<classifier>.<packaging>`
@@ -173,6 +173,7 @@ nexus 'some description' do
 end
 ```
 **NOTE:** This action does not accept attribute `:remote_url` as it is dangerous to do so. **Ex.** you might delete *ALL* artifacts by accident
+
 **WARNING:** This action will delete the version folder (folder that holds the file), so everything inside it will be deleted as well
 
 #### 7. Delete a file or folder from Nexus (delete folder 1.2.0 in this case)
@@ -198,6 +199,11 @@ Pull requests are very welcome! Make sure your patches are well tested. Ideally 
 3. Commit your changes (`git commit -am 'Added some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+To build and install the gem, go to your `chef-nexus` folder and then run:
+
+1. `rake build`
+2. `gem install pkg/chef-nexus-x.y.z.gem`, where `x.y.z` is the version you just built
 
 ### Testing
 
