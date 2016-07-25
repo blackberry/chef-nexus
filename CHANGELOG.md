@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 (04/04/2016)
+- Fixed bug regarding improper parsing of local_file with names like test.0.0.4.qcow2
+- Now guarding against empty strings for coordinates
+
 ## 0.1.0 (03/23/2016)
 - Implemented actions :upload, :download, :delete, :delete_url
 - Created rspec tests

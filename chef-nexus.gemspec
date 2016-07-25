@@ -27,7 +27,7 @@ Gem::Specification.new do |spec|
   spec.authors = ['Dongyu \'Gary\' Zheng']
   spec.email = ['garydzheng@gmail.com']
 
-  spec.summary = 'Chef resource for managing artifacts on Nexus by Sonatype'
+  spec.summary = 'chef-nexus is a Ruby gem that provides the `nexus` Chef resource for managing artifacts on Nexus by Sonatype.'
   spec.description = spec.summary
   spec.homepage = 'https://github.com/blackberry/chef-nexus'
 
@@ -37,7 +37,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'chef'
-  spec.add_dependency 'compat_resource'
+  spec.add_dependency 'compat_resource', '~> 12.8.0'
+  spec.add_dependency 'activesupport'
 
   spec.add_development_dependency 'bundler', '~> 1.11'
   spec.add_development_dependency 'rake', '~> 10.0'

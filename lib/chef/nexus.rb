@@ -13,6 +13,7 @@
 # limitations under the License.
 
 require 'chef_compat/resource'
+require 'active_support/all'
 require 'json'
 require 'erb'
 require 'digest'
@@ -218,11 +219,18 @@ groupId:artifactId:packaging:classifier:version)
             p = eval(x)
             hsh[x.to_sym] = p if p
           end
-          fail 'Your must specify :coordinates OR at least all of [:groupId, :artifactId, :version]' if hsh.size < 3 && !remote_url
-          if local_file && !hsh[:packaging]
-            extn = ::File.basename(local_file).split('.', 2)[1]
-            fail 'Files require an extension, or specify it with :packaging' if extn.nil? && !remote_url
-            hsh[:packaging] = extn
+
+          [:groupId, :artifactId, :version].each do |x|
+            fail 'Your must specify :coordinates OR at least all of [:groupId, :artifactId, :version]' unless hsh[x].present?
+          end unless remote_url
+
+          if local_file && !hsh[:packaging].present?
+            extn = ::File.extname(local_file)
+            if !remote_url && extn.empty?
+              fail 'Files require an extension, or specify it with :packaging'
+            else
+              hsh[:packaging] = extn[1..-1]
+            end
           end
           hsh
         end
