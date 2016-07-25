@@ -1,4 +1,4 @@
-# Copyright 2016, BlackBerry, Inc.
+# Copyright 2016, BlackBerry Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,40 +39,40 @@ def get_error(stdout, expected, fail_if)
   err = stacktrace ? "Chef run did not report 'Chef Client finished'." : nil
 
   case fail_if
-    when Regexp
-      return "stdout matched the following when it should not have:\n#{fail_if}", stacktrace if stdout =~ fail_if
-    when String
-      return "stdout included the following when it should not have:\n#{fail_if}", stacktrace if stdout.include?(fail_if)
+  when Regexp
+    return "stdout matched the following when it should not have:\n#{fail_if}", stacktrace if stdout =~ fail_if
+  when String
+    return "stdout included the following when it should not have:\n#{fail_if}", stacktrace if stdout.include?(fail_if)
   end unless fail_if.nil?
 
   # Each chef run can only fail due to one reason, so if it was an expected error, we can simply return nil
   [' RuntimeError: ', ' NoMethodError: ', ' TypeError: ', ' ERROR: ', ' FATAL: '].each do |e|
-    the_error = (stdout.split(e).last).split("\n")[0...-1].join("\n")
+    the_error = stdout.split(e).last.split("\n")[0...-1].join("\n")
     case expected
-      when Regexp
-        if e + the_error =~ expected
-          return nil, nil
-        else
-          return "#{e.strip}\n#{the_error}", stacktrace
-        end
-      when String
-        if (e + the_error).include?(expected)
-          return nil, nil
-        else
-          return "#{e.strip}\n#{the_error}", stacktrace
-        end
+    when Regexp
+      if e + the_error =~ expected
+        return nil, nil
       else
         return "#{e.strip}\n#{the_error}", stacktrace
+      end
+    when String
+      if (e + the_error).include?(expected)
+        return nil, nil
+      else
+        return "#{e.strip}\n#{the_error}", stacktrace
+      end
+    else
+      return "#{e.strip}\n#{the_error}", stacktrace
     end if stdout.include?(e)
   end if err
 
   return err, stacktrace if expected.nil?
 
   case expected
-    when Regexp
-      return "stdout did not match the following when it should have:\n#{expected}", stacktrace unless stdout =~ expected
-    when String
-      return "stdout did not include the following when it should have:\n#{expected}", stacktrace unless stdout.include?(expected)
+  when Regexp
+    return "stdout did not match the following when it should have:\n#{expected}", stacktrace unless stdout =~ expected
+  when String
+    return "stdout did not include the following when it should have:\n#{expected}", stacktrace unless stdout.include?(expected)
   end
 
   [err, stacktrace]
@@ -84,7 +84,7 @@ end
 #   :fail_if => 'fail if match'
 # }
 RSpec::Matchers.define :converge_test_recipe do |data = {}|
-  fail 'All tests require a :recipe.' unless data[:recipe]
+  raise 'All tests require a :recipe.' unless data[:recipe]
   match do
     stdout = chef_run(data[:recipe])
     puts stdout
@@ -119,7 +119,7 @@ end
 def delete(remote)
   if url_exists(remote)
     execute_or_fail("curl -v #{USE_AUTH ? "-u #{NEXUS_AUTH} " : nil}-X DELETE #{remote}")
-    fail "Server responded with successful deletion, but '#{remote}' still exists." if url_exists(remote)
+    raise "Server responded with successful deletion, but '#{remote}' still exists." if url_exists(remote)
   end
 end
 
@@ -133,7 +133,7 @@ def execute_or_fail(cmd, check_http = true)
   fail_me = false
   output.scan(%r{^ +<title>(\d{3}) - .*?</title>$}).each { |code| fail_me = true unless code[0] == '1' || code[0] == '2' } if check_http
   if $?.exitstatus != 0 || fail_me
-    fail "Command failed: #{cmd}\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n#{output.strip}\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+    raise "Command failed: #{cmd}\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n#{output.strip}\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
   end
   output
 end

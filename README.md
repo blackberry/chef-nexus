@@ -217,3 +217,8 @@ If you add new functionality, please create new tests accordingly.
 ## Authors
 
 Created by [Dongyu 'Gary' Zheng](https://github.com/dongyuzheng) (<garydzheng@gmail.com>)
+
+## Maintainers
+
+* [Bogdan Buczynski](https://github.com/bbuczynski) (<pikus1@gmail.com>)
+* [Phil Oliva](https://github.com/poliva83) (<philoliva8@gmail.com>)

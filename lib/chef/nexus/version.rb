@@ -1,4 +1,4 @@
-# Copyright 2016, BlackBerry, Inc.
+# Copyright 2016, BlackBerry Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,6 @@ module Chef
   # See: http://semver.org/spec/v2.0.0.html
   #
   module Nexus
-    VERSION = '0.1.1'
+    VERSION = '0.1.2'
   end
 end

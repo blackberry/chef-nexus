@@ -1,4 +1,4 @@
-# Copyright 2016, BlackBerry, Inc.
+# Copyright 2016, BlackBerry Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+gem 'compat_resource', '~> 12.8.0'
 require 'chef_compat/resource'
 require 'active_support/all'
 require 'json'
@@ -60,14 +61,14 @@ class Chef
       end
 
       action :upload do
-        fail ':local_file is missing' unless local_file
-        fail "#{local_file} does not exist" unless ::File.exist?(local_file)
+        raise ':local_file is missing' unless local_file
+        raise "#{local_file} does not exist" unless ::File.exist?(local_file)
 
         if upload_pom && !can_generate_pom
           msg = "chef-nexus was unable retrieve enough information to generate a pom\n"
           msg << "is :remote_url correct in terms of Maven & Nexus syntax? See README: Attributes - Notes\n"
           msg << 'Set attribute :upload_pom false to bypass this error.'
-          fail msg
+          raise msg
         end
 
         file_sha1 local_file_sha1
@@ -75,7 +76,7 @@ class Chef
 
         unless file_equal(current_resource)
           if file_exists
-            fail 'Different file currently exists on Nexus (or checksums are missing), if you want to overwrite it, set attribute :update_if_exists to true' unless update_if_exists
+            raise 'Different file currently exists on Nexus (or checksums are missing), if you want to overwrite it, set attribute :update_if_exists to true' unless update_if_exists
             delete(curl_url)
           end
           converge_by "uploaded file '#{local_file}' to Nexus at '#{curl_url}'" do
@@ -101,7 +102,7 @@ class Chef
 
           unless pom_equal(current_resource)
             if pom_exists
-              fail 'Different pom currently exists on Nexus (or checksums are missing), if you want to overwrite it, set attribute :update_if_exists to true' unless update_if_exists
+              raise 'Different pom currently exists on Nexus (or checksums are missing), if you want to overwrite it, set attribute :update_if_exists to true' unless update_if_exists
               delete(curl_base_url + '.pom')
             end
             converge_by "uploaded pom to Nexus at '#{curl_base_url + '.pom'}'" do
@@ -122,10 +123,10 @@ class Chef
       end
 
       action :download do
-        fail ':local_file is missing' unless local_file
-        fail "No file exists at '#{curl_url}' or you do not permissions" unless file_exists
+        raise ':local_file is missing' unless local_file
+        raise "No file exists at '#{curl_url}' or you do not permissions" unless file_exists
         unless file_equal(current_resource)
-          fail 'Different version currently exists locally, if you want to overwrite it, set attribute :update_if_exists to true' if ::File.exist?(local_file) && !update_if_exists
+          raise 'Different version currently exists locally, if you want to overwrite it, set attribute :update_if_exists to true' if ::File.exist?(local_file) && !update_if_exists
           converge_by "downloaded file '#{local_file}' from Nexus at '#{curl_url}'" do
             execute_or_fail("mkdir -p #{::File.dirname(local_file)}")
             download(curl_url, local_file)
@@ -135,7 +136,7 @@ class Chef
       end
 
       action :delete do
-        fail 'action :delete does not accept attribute :remote_url ... use Maven coordinates instead, or use action :delete_url' if remote_url
+        raise 'action :delete does not accept attribute :remote_url ... use Maven coordinates instead, or use action :delete_url' if remote_url
         converge_by "deleted artifact '#{curl_url}' from Nexus" do
           delete(curl_url.split('/')[0...-1].join('/'))
           updated_by_last_action(true)
@@ -143,7 +144,7 @@ class Chef
       end
 
       action :delete_url do
-        fail 'action :delete_url requires attribute :remote_url' unless remote_url
+        raise 'action :delete_url requires attribute :remote_url' unless remote_url
         converge_by "deleted '#{curl_url}' from Nexus" do
           delete(curl_url)
           updated_by_last_action(true)
@@ -154,17 +155,17 @@ class Chef
 
       def upload(local, remote)
         execute_or_fail("curl -v #{use_auth ? "-u #{n_auth} " : nil}-T #{local} #{remote}")
-        fail "Server responded with successful creation, but '#{remote}' does not exist." unless url_exists(remote)
+        raise "Server responded with successful creation, but '#{remote}' does not exist." unless url_exists(remote)
       end
 
       def download(remote, local)
         execute_or_fail("curl -v #{use_auth ? "-u #{n_auth} " : nil}#{remote} > #{local}")
-        fail "File appears to have been downloaded, but '#{local}' does not exist." unless ::File.exist?(local)
+        raise "File appears to have been downloaded, but '#{local}' does not exist." unless ::File.exist?(local)
       end
 
       def delete(remote)
         execute_or_fail("curl -v #{use_auth ? "-u #{n_auth} " : nil}-X DELETE #{remote}")
-        fail "Server responded with successful deletion, but '#{remote}' still exists." if url_exists(remote)
+        raise "Server responded with successful deletion, but '#{remote}' still exists." if url_exists(remote)
       end
 
       def execute_or_fail(cmd, check_http = true)
@@ -172,7 +173,7 @@ class Chef
         fail_me = false
         output.scan(%r{^ +<title>(\d{3}) - .*?</title>$}).each { |code| fail_me = true unless code[0] == '1' || code[0] == '2' } if check_http
         if $?.exitstatus != 0 || fail_me
-          fail "Command failed: #{cmd}\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n#{output.strip}\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+          raise "Command failed: #{cmd}\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n#{output.strip}\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
         end
         output
       end
@@ -204,10 +205,10 @@ class Chef
           if coordinates
             splt = coordinates.split(':')
             unless splt.length >= 3 && splt.length <= 5
-              fail %q(:coordinates must follow the one of the following formats
+              raise ':coordinates must follow the one of the following formats
 groupId:artifactId:version
 groupId:artifactId:packaging:version
-groupId:artifactId:packaging:classifier:version)
+groupId:artifactId:packaging:classifier:version'
             end
             hsh[:groupId] = splt.first
             hsh[:artifactId] = splt[1]
@@ -221,13 +222,13 @@ groupId:artifactId:packaging:classifier:version)
           end
 
           [:groupId, :artifactId, :version].each do |x|
-            fail 'Your must specify :coordinates OR at least all of [:groupId, :artifactId, :version]' unless hsh[x].present?
+            raise 'Your must specify :coordinates OR at least all of [:groupId, :artifactId, :version]' unless hsh[x].present?
           end unless remote_url
 
           if local_file && !hsh[:packaging].present?
             extn = ::File.extname(local_file)
             if !remote_url && extn.empty?
-              fail 'Files require an extension, or specify it with :packaging'
+              raise 'Files require an extension, or specify it with :packaging'
             else
               hsh[:packaging] = extn[1..-1]
             end
@@ -261,7 +262,7 @@ groupId:artifactId:packaging:classifier:version)
       def n_url
         @n_url ||= begin
           nurl = nexus_url || ENV['NEXUS_URL'] || n_config['url']
-          fail "Please provide Nexus url as either an attribute :nexus_url or in ~/.nexus/config profile '#{n_profile}'" unless nurl
+          raise "Please provide Nexus url as either an attribute :nexus_url or in ~/.nexus/config profile '#{n_profile}'" unless nurl
           nurl.chomp('/')
         end
       end
@@ -269,7 +270,7 @@ groupId:artifactId:packaging:classifier:version)
       def n_auth
         @n_auth ||= begin
           nauth = nexus_auth || ENV['NEXUS_AUTH'] || n_config['auth']
-          fail "Please provide Nexus auth as either an attribute :nexus_auth or in ~/.nexus/config profile '#{n_profile}'" if use_auth && !nauth
+          raise "Please provide Nexus auth as either an attribute :nexus_auth or in ~/.nexus/config profile '#{n_profile}'" if use_auth && !nauth
           nauth
         end
       end
@@ -277,7 +278,7 @@ groupId:artifactId:packaging:classifier:version)
       def n_repo
         @n_repo ||= begin
           nrepo = nexus_repo || ENV['NEXUS_REPO'] || n_config['repo']
-          fail "Please provide Nexus repository as either an attribute :repository or in ~/.nexus/config profile '#{n_profile}'" unless nrepo
+          raise "Please provide Nexus repository as either an attribute :repository or in ~/.nexus/config profile '#{n_profile}'" unless nrepo
           nrepo
         end
       end
