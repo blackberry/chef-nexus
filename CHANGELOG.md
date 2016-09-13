@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.0 (09/13/2016)
+- Remove dependency on compat-resource as a gem (resolves https://github.com/blackberry/chef-nexus/issues/6)
+
 ## 0.1.2 (04/28/2016)
 - Added copyright notices
 - Created .rubocop.yml and ran RuboCop
