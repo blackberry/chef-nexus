@@ -17,7 +17,7 @@
 ## Feel free to modify any variables to your needs.  ##
 #######################################################
 
-NEXUS_URL = 'http://mynexus.net/nexus/content/'
-NEXUS_REPO = 'chef-nexus-tests'
+NEXUS_URL = 'http://ebj-pilot-nexus.devlab2k.testnet.rim.net/nexus/content'
+NEXUS_REPO = 'chef-nexus-test' # ebu-opennebula-images
 NEXUS_AUTH = 'gary:secr3t'
 USE_AUTH = true

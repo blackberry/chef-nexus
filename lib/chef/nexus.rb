@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-gem 'compat_resource', '~> 12.8.0'
-require 'chef_compat/resource'
+require 'chef/resource'
 require 'active_support/all'
 require 'json'
 require 'erb'
@@ -24,7 +23,7 @@ class Chef
     #
     # Chef resource for managing artifacts on Nexus by Sonatype
     #
-    class Nexus < ChefCompat::Resource
+    class Nexus < Chef::Resource
       resource_name :nexus
 
       property :nexus_profile, String, desired_state: false
@@ -217,7 +216,9 @@ groupId:artifactId:packaging:classifier:version'
             hsh[:classifier] = splt[3] if splt.length == 5
           end
           %w(groupId artifactId version packaging classifier).each do |x|
+            # rubocop:disable Lint/Eval
             p = eval(x)
+            # rubocop:enable Lint/Eval
             hsh[x.to_sym] = p if p
           end
 
